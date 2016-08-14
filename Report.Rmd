@@ -1,0 +1,139 @@
+---
+title: "Machine Learning Assignment"
+date: "14 August 2016"
+output: html_document
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,cache=TRUE,message=FALSE,warning = FALSE)
+```
+
+## Aim of the Assigment
+The aim of the assignment is to predict for 20 cases how (accurately) a test person performed the unilateral dumbbell biceps curl:
+
+* exactly according to the specification (Class A),
+* throwing the elbows to the front (Class B),
+* lifting the dumbbell only halfway (Class C),
+* lowering the dumbbell only halfway (Class D),
+* throwing the hips to the front (Class E).
+
+## Available data
+For our prediction, data from four sensors can be utilized. These sensors were placed at the participant's:
+
+* arm,
+* forearm,
+* dumbbell,
+* and belt.
+
+For a more detailed description see <http://groupware.les.inf.puc-rio.br/har>.
+
+## Getting and cleaning the data
+
+The raw data are available on the course website.
+
+From the test data set, we can see that several variables contain no data. Since only information-bearing variables are useful for prediction purposes, we exclude all variables that solely include "NA" in the test set. Moreover, we remove all variables which are irrelevant for our analysis, e.g. "window" (columns 1, 3-7).   
+
+````{r}
+URL1 <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+URL2 <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+download.file(URL1,"training.csv")
+download.file(URL2,"testing.csv")
+
+training <- read.csv("training.csv",na.strings = c("NA","#DIV/0!", ""))
+testing <- read.csv("testing.csv",na.strings = c("NA","#DIV/0!", ""))
+
+missing <- colSums(!is.na(testing))
+
+testing <- testing[missing > 0]
+training <- training[missing > 0]
+
+testing <- testing[,-c(1,3:7)]
+training <- training[,-c(1,3:7)]
+````
+
+After the cleaning, only the factor variable how the exercise was performed (A-E), the data from the sensors, and the name of the participant who performed the exercise are left.
+
+## Splitting the data in a training and a test set
+
+In order to make cross validation possible, we split the "training set" in two subsets.  
+
+````{r}
+library(caret)
+set.seed(13071955)
+
+selection <-   createDataPartition(training$classe, p=0.75, list=FALSE)
+
+subtraining <- training[selection,]
+subtesting <- training[-selection,]
+````
+
+## Fitting multiple models
+
+To determine what prediction algorithm yields the highest accuracy, we deployed three methods available in the caret package:
+
+* Classification tree ("classe")
+* Random forest ("rf")
+* Boosting ("gbm")
+
+In every case, we use all available data from all sensors and the name of the person who performed the exercise. According to the course slides, we expect that especially the latter two approaches yield accurate results. However, since a combination of predictors often leads to better results, we use the three obtained predictions as covariates to, again, predict how the exercise was performed. 
+
+### Classification tree
+````{r}
+Tree <- train(classe ~.,data=subtraining, method="rpart")
+PTree <- predict(Tree,subtesting) 
+confusionMatrix(PTree,subtesting$classe)
+````
+
+### Random forest
+````{r}
+Forest <- train(classe ~.,data=subtraining, method="rf",verbose=FALSE)
+PForest <- predict(Forest,subtesting) 
+confusionMatrix(PForest,subtesting$classe)
+````
+
+### Boosting
+````{r}
+Boost <- train(classe ~.,data=subtraining, method="gbm",verbose=FALSE)
+PBoost <- predict(Boost,subtesting) 
+confusionMatrix(PBoost,subtesting$classe)
+````
+
+### Combination of the former three algorithms
+
+We combine the prediction of the classification tree, the random forest, and boosting by means of boosting to come to a final prediction.  
+
+````{r}
+Comb <- data.frame(PTree,PForest,PBoost,classe=subtesting$classe)
+Combi <- train(classe ~.,Comb,method="gbm",verbose=FALSE) 
+PCombi <- predict(Combi,subtesting)
+confusionMatrix(PCombi,subtesting$classe)
+````
+
+### Results
+The out of sample errors are:
+
+* Classification tree: .5424
+* Random forest: .008
+* Boosting:.0385
+* Combination of the former three: .008
+
+Unexpectedly, the combination of our three predictors does not yield better results than the most accurate method (random forest). Nevertheless, we will use the combination because we assume that it will allow a more precise prediction in the final test set.
+
+ 
+## Predicting how the exercise was performed
+
+For the 20 cases in the test set, we use the combined prediction algorithm to come to a final judgement of how the exercise was performed.  
+
+````{r}
+A  <- predict(Tree,testing)
+B <- predict(Forest,testing)
+C <- predict(Boost,testing)
+Test <- data.frame(PTree=A,PForest=B,PBoost=C)
+Test
+
+Prediction <- predict(Combi,Test)
+data.frame(Prediction)
+````
+
+
