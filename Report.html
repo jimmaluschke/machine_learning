@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2016-08-11" />
+<meta name="date" content="2016-08-14" />
 
 <title>Machine Learning Assignment</title>
 
@@ -116,13 +116,13 @@ $(document).ready(function () {
 
 
 <h1 class="title toc-ignore">Machine Learning Assignment</h1>
-<h4 class="date"><em>11 August 2016</em></h4>
+<h4 class="date"><em>14 August 2016</em></h4>
 
 </div>
 
 
-<div id="aim-of-the-assigment" class="section level2">
-<h2>Aim of the Assigment</h2>
+<div id="aim-of-the-assignment" class="section level2">
+<h2>Aim of the Assignment</h2>
 <p>The aim of the assignment is to predict for 20 cases how (accurately) a test person performed the unilateral dumbbell biceps curl:</p>
 <ul>
 <li>exactly according to the specification (Class A),</li>
@@ -134,7 +134,7 @@ $(document).ready(function () {
 </div>
 <div id="available-data" class="section level2">
 <h2>Available data</h2>
-<p>For the prediction, data from four sensors can be utilized. These sensors were placed at the participant’s:</p>
+<p>For our prediction, data from four sensors can be utilized. These sensors were placed at the participant’s:</p>
 <ul>
 <li>arm,</li>
 <li>forearm,</li>
@@ -184,7 +184,7 @@ subtesting &lt;- training[-selection,]</code></pre>
 <li>Random forest (“rf”)</li>
 <li>Boosting (“gbm”)</li>
 </ul>
-<p>In every case, we use all available data from all sensors and the name of the person who performed the exercise. According to the course slides, we expect that especially the latter two approaches yield accurate results.However, since a combination of predictors often leads to better results, we use the three obtained predictions as covariates to, again, predict how the exercise was performed.</p>
+<p>In every case, we use all available data from all sensors and the name of the person who performed the exercise. According to the course slides, we expect that especially the latter two approaches yield accurate results. However, since a combination of predictors often leads to better results, we use the three obtained predictions as covariates to, again, predict how the exercise was performed.</p>
 <div id="classification-tree" class="section level3">
 <h3>Classification tree</h3>
 <pre class="r"><code>Tree &lt;- train(classe ~.,data=subtraining, method=&quot;rpart&quot;)
