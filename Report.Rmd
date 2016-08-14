@@ -8,7 +8,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE,cache=TRUE,message=FALSE,warning = FALSE)
 ```
 
-## Aim of the Assigment
+## Aim of the Assignment
 The aim of the assignment is to predict for 20 cases how (accurately) a test person performed the unilateral dumbbell biceps curl:
 
 * exactly according to the specification (Class A),
